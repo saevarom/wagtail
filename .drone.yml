@@ -6,6 +6,7 @@ build:
     commands:
       - XDG_CACHE_HOME=/drone/pip-isort-cache pip install wheel
       - XDG_CACHE_HOME=/drone/pip-isort-cache pip install isort -e .[testing,docs]
+      - ls  -lr /drone-isort-cache
       - echo "$PYTHONPATH"
       - python3 -c "import django; print(django.__path__)"
       - python3 -c "import wagtail; print(wagtail.__path__)"

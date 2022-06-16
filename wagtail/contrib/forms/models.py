@@ -9,9 +9,9 @@ from django.template.response import TemplateResponse
 from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 
-from wagtail.api import APIField
 from wagtail.admin.mail import send_mail
 from wagtail.admin.panels import FieldPanel
+from wagtail.api import APIField
 from wagtail.contrib.forms.utils import get_field_clean_name
 from wagtail.models import Orderable, Page
 

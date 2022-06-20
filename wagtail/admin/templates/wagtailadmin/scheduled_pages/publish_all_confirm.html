@@ -13,7 +13,7 @@
             {% for revision in revisions_to_publish %}
                 <li>{{ revision.title }}</li>
             {% endfor %}
-        <ul>
+        </ul>
         <form action="{% url 'wagtailadmin_scheduled_pages:publish_all' %}" method="POST">
             {% csrf_token %}
             <input type="submit" value="{% trans 'Yes, publish all now' %}" class="button" />

@@ -43,8 +43,8 @@ from wagtail.admin.views.pages.bulk_actions import (
     PublishBulkAction,
     UnpublishBulkAction,
 )
-from wagtail.admin.viewsets import viewsets
 from wagtail.admin.views.scheduled_pages import ScheduledPagesPanel
+from wagtail.admin.viewsets import viewsets
 from wagtail.admin.widgets import Button, ButtonWithDropdownFromHook, PageListingButton
 from wagtail.models import Collection, Page, Task, UserPagePermissionsProxy, Workflow
 from wagtail.permissions import (
@@ -865,6 +865,7 @@ class ScheduledPagesMenuItem(MenuItem):
     def is_shown(self, request):
         return UserPagePermissionsProxy(request.user).can_publish_pages()
 
+
 @hooks.register("register_reports_menu_item")
 def register_locked_pages_menu_item():
     return LockedPagesMenuItem(
@@ -913,6 +914,7 @@ def register_aging_pages_report_menu_item():
         icon_name="time",
         order=1100,
     )
+
 
 @hooks.register("register_reports_menu_item")
 def register_scheduled_pages_menu_item():
@@ -1057,8 +1059,8 @@ def register_icons(icons):
 def add_pages_summary_item(request, items):
     items.insert(0, PagesSummaryItem(request))
 
-# somehow ruins the dashboard... ?
-@hooks.register('construct_homepage_panels')
+
+@hooks.register("construct_homepage_panels")
 def register_scheduled_pages_panel(request, panels):
     panels.append(ScheduledPagesPanel())
 
@@ -1108,4 +1110,3 @@ for action_class in [
     UnpublishBulkAction,
 ]:
     hooks.register("register_bulk_action", action_class)
-

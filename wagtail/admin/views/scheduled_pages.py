@@ -1,6 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-import django_filters
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
@@ -10,12 +9,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 
 from wagtail.admin import messages
-from wagtail.admin.filters import DateRangePickerWidget, WagtailFilterSet
-from wagtail.admin.views.reports.base import PageReportView
-from wagtail.core.models import Page, UserPagePermissionsProxy, Revision as PageRevision
-
-
 from wagtail.admin.ui.components import Component
+from wagtail.core.models import Page, UserPagePermissionsProxy
 
 
 def get_scheduled_pages_for_user(request):
@@ -23,7 +18,7 @@ def get_scheduled_pages_for_user(request):
     pages = (
         Page.objects.annotate_approved_schedule()
         .filter(_approved_schedule=True)
-        .prefetch_related("content_type") 
+        .prefetch_related("content_type")
         .order_by("-first_published_at")
         & user_perms.publishable_pages()
     )
@@ -41,7 +36,6 @@ class ScheduledPagesPanel(Component):
     def get_context_data(self, parent_context):
         request = parent_context["request"]
         context = super().get_context_data(parent_context)
-        user_perms = UserPagePermissionsProxy(request.user)
         context["pages_to_be_scheduled"] = get_scheduled_pages_for_user(request)
         context["request"] = request
         context["csrf_token"] = parent_context["csrf_token"]
@@ -53,23 +47,28 @@ def publish(request, page_id):
     if not page.permissions_for_user(request.user).can_publish():
         raise PermissionDenied
 
-    new_go_live_timestamp = timezone.now() - timedelta(seconds = 1)
+    new_go_live_timestamp = timezone.now() - timedelta(seconds=1)
     page.go_live_at = new_go_live_timestamp
     page.save()
-     # Save revision
-    revision = page.save_revision(
-        user=request.user,
-        log_action=True)
+
+    # Save revision
+    revision = page.save_revision(user=request.user, log_action=True)
     revision.publish()
 
-    messages.success(request, _("Page '{0}' has been published.").format(page.get_admin_display_title()), extra_tags='time')
+    messages.success(
+        request,
+        _("Page '{0}' has been published.").format(page.get_admin_display_title()),
+        extra_tags="time",
+    )
 
-     # Redirect
-    redirect_to = request.POST.get('next', None)
-    if redirect_to and url_has_allowed_host_and_scheme(url=redirect_to, allowed_hosts={request.get_host()}):
+    # Redirect
+    redirect_to = request.POST.get("next", None)
+    if redirect_to and url_has_allowed_host_and_scheme(
+        url=redirect_to, allowed_hosts={request.get_host()}
+    ):
         return redirect(redirect_to)
     else:
-        return redirect('wagtailadmin_explore', page.get_parent().id)
+        return redirect("wagtailadmin_explore", page.get_parent().id)
 
 
 def publish_all_scheduled_confirm(request):
@@ -81,28 +80,31 @@ def publish_all_scheduled_confirm(request):
         "wagtailadmin/scheduled_pages/publish_all_confirm.html",
         {
             "revisions_to_publish": revisions_to_publish,
-        }
+        },
     )
 
 
 def publish_all_scheduled(request):
     if request.method == "POST":
-        new_go_live_timestamp =  timezone.now() - timedelta(seconds=1)
+        new_go_live_timestamp = timezone.now() - timedelta(seconds=1)
         revisions_to_publish = get_scheduled_pages_for_user(request)
         for page in revisions_to_publish:
             page.go_live_at = new_go_live_timestamp
             page.save()
-            revision = page.specific.save_revision(
-                user=request.user,
-                log_action=True)
+            revision = page.specific.save_revision(user=request.user, log_action=True)
             revision.publish()
 
-        messages.success(request, _("{0} pages have been published.").format(len(revisions_to_publish)), extra_tags='time')
+        messages.success(
+            request,
+            _("{0} pages have been published.").format(len(revisions_to_publish)),
+            extra_tags="time",
+        )
 
         # Redirect
-        redirect_to = request.POST.get('next', None)
-        if redirect_to and url_has_allowed_host_and_scheme(url=redirect_to, allowed_hosts={request.get_host()}):
+        redirect_to = request.POST.get("next", None)
+        if redirect_to and url_has_allowed_host_and_scheme(
+            url=redirect_to, allowed_hosts={request.get_host()}
+        ):
             return redirect(redirect_to)
         else:
-            return redirect('wagtailadmin_reports:scheduled_pages')
-        
+            return redirect("wagtailadmin_reports:scheduled_pages")

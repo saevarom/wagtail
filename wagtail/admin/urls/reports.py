@@ -3,8 +3,8 @@ from django.urls import path
 from wagtail.admin.views.reports.aging_pages import AgingPagesView
 from wagtail.admin.views.reports.audit_logging import LogEntriesView
 from wagtail.admin.views.reports.locked_pages import LockedPagesView
-from wagtail.admin.views.reports.workflows import WorkflowTasksView, WorkflowView
 from wagtail.admin.views.reports.scheduled_pages import ScheduledPagesView
+from wagtail.admin.views.reports.workflows import WorkflowTasksView, WorkflowView
 
 app_name = "wagtailadmin_reports"
 urlpatterns = [

@@ -897,6 +897,15 @@ class PageTypesReportMenuItem(MenuItem):
         )
 
 
+class ScheduledPagesMenuItem(MenuItem):
+    def is_shown(self, request):
+        return getattr(
+            settings, "WAGTAIL_SCHEDULED_PAGES_REPORT_ENABLED", True
+        ) and page_permission_policy.user_has_any_permission(
+            request.user, ["add", "change", "publish"]
+        )
+
+
 @hooks.register("register_reports_menu_item")
 def register_locked_pages_menu_item():
     return LockedPagesMenuItem(
@@ -960,6 +969,16 @@ def register_page_types_report_menu_item():
         name="page-types-usage",
         icon_name="doc-empty-inverse",
         order=1200,
+    )
+
+
+@hooks.register("register_reports_menu_item")
+def register_scheduled_pages_menu_item():
+    return ScheduledPagesMenuItem(
+        _("Scheduled pages"),
+        reverse("wagtailadmin_reports:scheduled_pages"),
+        icon_name="time",
+        order=1300,
     )
 
 

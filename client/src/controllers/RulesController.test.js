@@ -62,10 +62,18 @@ describe('RulesController', () => {
       await setup(`
       <form data-controller="w-rules" data-action="change->w-rules#resolve">
         <input name="a" type="text" data-w-rules-target="enable" data-w-rules="''" />
-        <input name="a" type="text" data-w-rules-target="enable" data-w-rules="${_({})}" />
-        <input name="b" type="text" data-w-rules-target="enable" data-w-rules="${_({ '': '' })}" />
-        <input name="c" type="text" data-w-rules-target="enable" data-w-rules="${_([])}" />
-        <input name="d" type="text" data-w-rules-target="enable" data-w-rules="${_([[]])}" />
+        <input name="a" type="text" data-w-rules-target="enable" data-w-rules="${_(
+          {},
+        )}" />
+        <input name="b" type="text" data-w-rules-target="enable" data-w-rules="${_(
+          { '': '' },
+        )}" />
+        <input name="c" type="text" data-w-rules-target="enable" data-w-rules="${_(
+          [],
+        )}" />
+        <input name="d" type="text" data-w-rules-target="enable" data-w-rules="${_(
+          [[]],
+        )}" />
       </form>`);
 
       document
@@ -307,7 +315,9 @@ describe('RulesController', () => {
       <form>
         <input type="text" name="title" value="bad" />
         <div data-controller="w-rules" data-action="change@document->w-rules#resolve">
-          <input name="enter" type="text" data-w-rules-target="enable" data-w-rules="${_([['title', 'good']])}" >
+          <input name="enter" type="text" data-w-rules-target="enable" data-w-rules="${_(
+            [['title', 'good']],
+          )}" >
         </div>
       </form>`);
 

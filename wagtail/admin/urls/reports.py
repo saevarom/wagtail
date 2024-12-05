@@ -6,6 +6,7 @@ from wagtail.admin.views.reports.locked_pages import LockedPagesView
 from wagtail.admin.views.reports.page_types_usage import (
     PageTypesUsageReportView,
 )
+from wagtail.admin.views.reports.scheduled_pages import ScheduledPagesView
 from wagtail.admin.views.reports.workflows import WorkflowTasksView, WorkflowView
 
 app_name = "wagtailadmin_reports"
@@ -35,6 +36,7 @@ urlpatterns = [
         name="site_history_results",
     ),
     path("aging-pages/", AgingPagesView.as_view(), name="aging_pages"),
+    path("scheduled/", ScheduledPagesView.as_view(), name="scheduled_pages"),
     path(
         "aging-pages/results/",
         AgingPagesView.as_view(results_only=True),

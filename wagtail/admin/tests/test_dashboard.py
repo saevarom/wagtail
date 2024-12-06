@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -402,3 +404,51 @@ class WorkflowObjectsToModerateQueryCount(WagtailTestUtils, TestCase):
         ]
         titles = [e.get_text(strip=True) for e in soup.select(".title-wrapper a")]
         self.assertEqual(titles, expected_titles)
+
+
+class TestScheduledPagesPanel(WagtailTestUtils, TestCase):
+    def setUp(self):
+        # Find root page
+        self.root_page = Page.objects.get(id=2)
+
+        # Add child page
+        child_page = SimplePage(
+            title="Hello world!",
+            slug="hello-world",
+            content="Some content here",
+        )
+        self.root_page.add_child(instance=child_page)
+        self.revision = child_page.save_revision()
+        self.revision.publish()
+        self.child_page = SimplePage.objects.get(id=child_page.id)
+        self.user_alice = self.create_superuser(username="alice", password="password")
+        self.login(username="alice", password="password")
+
+    def go_to_dashboard_response(self):
+        response = self.client.get(reverse("wagtailadmin_home"))
+        self.assertEqual(response.status_code, 200)
+        return response
+
+    def test_schedule_something_to_go_live(self):
+        page = self.child_page
+        page.has_unpublished_changes = True
+        page.go_live_at = timezone.now() + datetime.timedelta(days=1)
+        revision = page.save_revision()
+        revision.publish()
+
+        response = self.go_to_dashboard_response()
+        self.assertIn("Your scheduled pages", response.content.decode("utf-8"))
+
+    def test_schedule_something_to_expire(self):
+        page = self.child_page
+        page.has_unpublished_changes = True
+        page.expire_at = timezone.now() + datetime.timedelta(days=1)
+        revision = page.save_revision()
+        revision.publish()
+
+        response = self.go_to_dashboard_response()
+        self.assertIn("Your scheduled pages", response.content.decode("utf-8"))
+
+    def test_no_scheduled_pages(self):
+        response = self.go_to_dashboard_response()
+        self.assertNotIn("Your scheduled pages", response.content.decode("utf-8"))

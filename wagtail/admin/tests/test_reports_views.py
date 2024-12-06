@@ -1546,3 +1546,93 @@ class TestPageTypesUsageReportViewPermissions(BaseReportViewTestCase):
             f"<a href={edit_simple_page_url}>{latest_edited_simple_page.get_admin_display_title()}</a>",
             html=True,
         )
+
+
+class TestScheduledPagesViewPermissions(WagtailTestUtils, TestCase):
+    def setUp(self):
+        self.user = self.login()
+
+    def get(self, params={}):
+        return self.client.get(reverse("wagtailadmin_reports:scheduled_pages"), params)
+
+    def test_simple(self):
+        response = self.get()
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_with_no_permission(self):
+        group = Group.objects.create(name="test group")
+        self.user.is_superuser = False
+        self.user.save()
+        self.user.groups.add(group)
+        self.user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="wagtailadmin", codename="access_admin"
+            )
+        )
+        # No GroupPagePermission created
+
+        response = self.get()
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("wagtailadmin_home"))
+
+    def test_get_with_minimal_permissions(self):
+        group = Group.objects.create(name="test group")
+        self.user.is_superuser = False
+        self.user.save()
+        self.user.groups.add(group)
+        self.user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label="wagtailadmin", codename="access_admin"
+            )
+        )
+        GroupPagePermission.objects.create(
+            group=group,
+            page=Page.objects.first(),
+            permission_type="add",
+        )
+
+        response = self.get()
+
+        self.assertEqual(response.status_code, 200)
+
+
+class TestScheduledPagesView(BaseReportViewTestCase):
+    url_name = "wagtailadmin_reports:scheduled_pages"
+
+    def test_simple(self):
+        response = self.get()
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(
+            response,
+            "wagtailadmin/reports/base_page_report_results.html",
+        )
+        self.assertTemplateUsed(response, "wagtailadmin/reports/base_report.html")
+        self.assertTemplateUsed(
+            response,
+            "wagtailadmin/reports/scheduled_pages_results.html",
+        )
+        self.assertBreadcrumbs(
+            [{"url": "", "label": "Pages scheduled for publishing"}],
+            response.content,
+        )
+
+        # Initially there should be no locked pages
+        self.assertContains(response, "No pages scheduled for publishing were found.")
+
+        parent_page = Page.objects.first()
+        parent_page.add_child(
+            instance=Page(
+                title="First scheduled page",
+                live=True,
+                has_unpublished_changes=True,
+                go_live_at=timezone.now() + datetime.timedelta(days=1),
+            )
+        )
+        parent_page.add_child(
+            instance=Page(
+                title="Second scheduled page",
+                live=True,
+                has_unpublished_changes=True,
+                expire_at=timezone.now() + datetime.timedelta(days=1),
+            )
+        )

@@ -35,8 +35,13 @@ urlpatterns = [
         LogEntriesView.as_view(results_only=True),
         name="site_history_results",
     ),
-    path("aging-pages/", AgingPagesView.as_view(), name="aging_pages"),
     path("scheduled/", ScheduledPagesView.as_view(), name="scheduled_pages"),
+    path(
+        "scheduled/results/",
+        ScheduledPagesView.as_view(results_only=True),
+        name="scheduled_pages_results",
+    ),
+    path("aging-pages/", AgingPagesView.as_view(), name="aging_pages"),
     path(
         "aging-pages/results/",
         AgingPagesView.as_view(results_only=True),

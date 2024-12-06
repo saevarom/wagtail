@@ -65,12 +65,14 @@ class ScheduledPagesReportFilterSet(WagtailFilterSet):
 
 
 class ScheduledPagesView(PageReportView):
-    template_name = "wagtailadmin/reports/scheduled_pages.html"
-    title = _("Pages scheduled for publishing")
+    results_template_name = "wagtailadmin/reports/scheduled_pages_results.html"
+    page_title = _("Pages scheduled for publishing")
     header_icon = "time"
     filterset_class = ScheduledPagesReportFilterSet
     permission_policy = PagePermissionPolicy()
     any_permission_required = ["add", "change", "publish"]
+    index_url_name = "wagtailadmin_reports:aging_pages"
+    index_results_url_name = "wagtailadmin_reports:scheduled_pages_results"
 
     def get_queryset(self):
         qs = get_scheduled_pages_for_user(self.request.user)
